@@ -1,0 +1,106 @@
+{% extends "base.html" %}{% block title %}SERE - Relat&oacute;rios{% endblock %}{% block content %}
+<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+  <div>
+    <h1 class="text-3xl font-black">Relat&oacute;rios</h1>
+    <p class="muted">{{ periodo_atual }} - exporta&ccedil;&otilde;es institucionais para coordena&ccedil;&atilde;o e reuni&otilde;es pedag&oacute;gicas.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a class="btn" href="/relatorios/alunos.xlsx">Exportar Excel completo</a>
+    <a class="btn-ghost" href="/relatorios/alunos.pdf">Baixar PDF</a>
+  </div>
+</div>
+
+<section class="grid gap-4 md:grid-cols-4">
+  <div class="card"><span class="muted">Alunos</span><strong class="block text-3xl">{{ dados.total_alunos }}</strong></div>
+  <div class="card"><span class="muted">Turmas</span><strong class="block text-3xl">{{ dados.total_turmas }}</strong></div>
+  <div class="card"><span class="muted">Índice SERE</span><strong class="block text-3xl">{{ dados.media_geral }}</strong></div>
+  <div class="card"><span class="muted">Interven&ccedil;&otilde;es abertas</span><strong class="block text-3xl">{{ intervencoes.abertas }}</strong></div>
+</section>
+
+<section class="mt-4 grid gap-4 lg:grid-cols-2">
+  <article class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Alunos em aten&ccedil;&atilde;o</h2>
+      <span class="pill">Top 3</span>
+    </div>
+    <div class="space-y-2">
+      {% for aluno in dados.alunos_atencao %}
+      <a class="grid-row grid-cols-[70px_1fr_auto]" href="/perfil/{{ aluno.id }}">
+        <span>{{ aluno.indice_sere }}</span>
+        <strong>{{ aluno.nome }}</strong>
+        <small>{{ aluno.risco }} - {{ aluno.turma }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Resumo por turma</h2>
+      <span class="pill">{{ turmas|length }} turmas</span>
+    </div>
+    <div class="space-y-2">
+      {% for turma in turmas[:6] %}
+      <a class="grid-row grid-cols-[70px_1fr_auto]" href="/turmas/{{ turma.id }}">
+        <span>#{{ turma.rank }}</span>
+        <strong>{{ turma.nome }}</strong>
+        <small>{{ turma.media_geral }} - {{ turma.classe_media }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="mt-4 grid gap-4 lg:grid-cols-[420px_1fr]">
+  <form method="POST" action="/intervencoes" class="card space-y-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2 class="text-xl font-black">Criar interven&ccedil;&atilde;o</h2>
+    <select class="field" name="student_id" required>
+      {% for aluno in alunos %}<option value="{{ aluno.id }}">{{ aluno.nome }} - {{ aluno.turma }}</option>{% endfor %}
+    </select>
+    <select class="field" name="motivo" required>
+      <option>Queda de desempenho</option>
+      <option>Baixa participa&ccedil;&atilde;o</option>
+      <option>Dificuldade acad&ecirc;mica</option>
+      <option>Dificuldade social</option>
+      <option>Acompanhamento preventivo</option>
+    </select>
+    <textarea class="field" name="acao" rows="4" placeholder="A&ccedil;&atilde;o pedag&oacute;gica e evid&ecirc;ncia esperada" required></textarea>
+    <input class="field" name="responsavel" placeholder="Respons&aacute;vel">
+    <input class="field" type="date" name="prazo">
+    <button class="btn" type="submit">Criar plano</button>
+  </form>
+
+  <article class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Interven&ccedil;&otilde;es recentes</h2>
+      <a class="text-sm font-bold text-cyan-200" href="/intervencoes">Ver todos</a>
+    </div>
+    <div class="space-y-2">
+      {% for item in intervencoes["items"][:6] %}
+      <a class="grid-row grid-cols-[1fr_auto]" href="/perfil/{{ item.student_id }}">
+        <span><strong>{{ item.aluno.nome }}</strong><small class="muted block">{{ item.motivo }} - {{ item.responsavel or usuario_atual }}</small></span>
+        <b>{{ item.status }}</b>
+      </a>
+      {% else %}
+      <div class="rounded-xl bg-slate-950/50 p-4"><strong>Nenhuma interven&ccedil;&atilde;o registrada.</strong></div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="card mt-4 overflow-x-auto">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-xl font-black">Relatórios individuais</h2>
+    <span class="pill">PDF por aluno</span>
+  </div>
+  <div class="min-w-[860px]">
+    <div class="grid-head grid-cols-[1.4fr_.7fr_.7fr_.7fr_auto]"><span>Aluno</span><span>Turma</span><span>Índice</span><span>Risco</span><span>Arquivo</span></div>
+    <div class="mt-2 space-y-2">
+      {% for aluno in alunos %}
+      <div class="grid-row grid-cols-[1.4fr_.7fr_.7fr_.7fr_auto]"><strong>{{ aluno.nome }}</strong><span>{{ aluno.turma }}</span><span>{{ aluno.indice_sere }}</span><span>{{ aluno.risco }}</span><a class="btn-ghost" href="/relatorios/aluno/{{ aluno.id }}.pdf">PDF</a></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

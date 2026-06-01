@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% block title %}SERE - Historico{% endblock %}{% block content %}
+<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+  <div>
+    <span class="eyebrow">Evolution Log</span>
+    <h1 class="text-3xl font-black">Historico</h1>
+    <p class="muted">Mudancas, titulos, comprovacoes e graficos de evolucao por aluno.</p>
+  </div>
+  <span class="pill">{{ historico|length }} perfis analisados</span>
+</div>
+
+<section class="grid gap-4 lg:grid-cols-2">
+  <div class="card">
+    <h2 class="text-xl font-black">Grafico de evolucao</h2>
+    <div class="mt-3 space-y-3">
+      {% for h in historico[:24] %}
+      <a href="/perfil/{{ h.aluno.id }}" class="evolution-card">
+        <div class="flex items-start justify-between gap-3">
+          <span><strong>{{ h.aluno.nome }}</strong><small class="muted block">{{ h.aluno.turma }} - {{ h.classe_inicial }} para {{ h.classe_atual }}</small></span>
+          <b>{% if h.evolucoes.geral.delta>=0 %}+{% endif %}{{ h.evolucoes.geral.delta|round(1) }}</b>
+        </div>
+        <div class="evo-chart mt-3">
+          {% for key,label in [('academico','Acad.'),('adaptabilidade','Adapt.'),('fisico','Fis.'),('social','Soc.'),('geral','Geral')] %}
+          {% set ev=h.evolucoes[key] %}
+          <div class="evo-row">
+            <span>{{ label }}</span>
+            <div class="evo-track">
+              <i class="evo-start" style="left: {{ ev.inicio }}%"></i>
+              <b class="evo-now" style="width: {{ ev.atual }}%"></b>
+            </div>
+            <small>{{ ev.inicio|round(1) }} -> {{ ev.atual|round(1) }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="text-xl font-black">Linha do tempo</h2>
+    <div class="mt-3 space-y-3">
+      {% for item in linha_do_tempo %}
+      <div class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+        <span class="pill">{{ item.tipo }}</span>
+        <strong class="mt-2 block">{{ item.titulo }}</strong>
+        <p class="muted text-sm">{{ item.texto }}</p>
+        <small class="muted">{{ item.data }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

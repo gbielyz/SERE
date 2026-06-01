@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sere-demo
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SERE_COOKIE_SECURE
+        value: "1"
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: SERE_DB_PATH
+        value: /var/data/sere.db
+      - key: SERE_ADMIN_PASSWORD
+        sync: false
+      - key: SERE_PROFESSOR_PASSWORD
+        sync: false
+      - key: SERE_ALUNO_PASSWORD
+        sync: false
+    disk:
+      name: sere-data
+      mountPath: /var/data
+      sizeGB: 1

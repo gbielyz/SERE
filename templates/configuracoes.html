@@ -1,0 +1,102 @@
+{% extends "base.html" %}{% block title %}SERE - {{ t('settings.title') }}{% endblock %}{% block content %}
+<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+  <div>
+    <span class="eyebrow">{{ t('settings.eyebrow') }}</span>
+    <h1 class="text-3xl font-black">{{ t('settings.title') }}</h1>
+    <p class="muted">{{ t('settings.subtitle') }}</p>
+  </div>
+  <span id="focusBadge" class="pill" data-inactive="{{ t('focus.inactive') }}">{{ t('focus.inactive') }}</span>
+</div>
+{% if mensagem %}<div class="mb-4 rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-100">{{ mensagem }}</div>{% endif %}
+
+<form method="POST" action="/configuracoes" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <section class="card md:col-span-2 xl:col-span-4">
+    <label class="block">
+      <span class="mb-1 block text-sm font-bold text-slate-300">{{ t('settings.language') }}</span>
+      <select class="field" name="language">
+        {% for lang_id, lang_name in idiomas.items() %}
+        <option value="{{ lang_id }}" {% if idioma_atual == lang_id %}selected{% endif %}>{{ lang_name }}</option>
+        {% endfor %}
+      </select>
+      <small class="muted">{{ t('settings.language_help') }}</small>
+    </label>
+  </section>
+  {% for tema in temas %}
+  <label class="card cursor-pointer theme-option {% if tema_atual == tema.id %}theme-option-active{% endif %}">
+    <input type="radio" name="theme" value="{{ tema.id }}" {% if tema_atual == tema.id %}checked{% endif %} class="mb-3">
+    <span class="theme-preview theme-preview-{{ tema.id }}"><i></i><i></i><i></i></span>
+    <strong class="mt-3 block text-lg">{{ tema.nome }}</strong>
+    <p class="muted mt-1">{{ tema.descricao }}</p>
+  </label>
+  {% endfor %}
+  <button class="btn md:col-span-2 xl:col-span-4" type="submit">{{ t('settings.theme_button') }}</button>
+</form>
+
+<section class="grid gap-4 lg:grid-cols-2 mt-4">
+  <div class="card">
+    <h2 class="text-xl font-black">{{ t('focus.title') }}</h2>
+    <p class="muted mt-1">{{ t('focus.description') }}</p>
+    <div class="settings-grid mt-3">
+      <label class="block"><span class="muted text-sm">{{ t('focus.duration') }}</span><select id="focusDuration" class="field mt-1" data-routine="{{ perfil_estudo.minutes_per_day if perfil_estudo else 60 }}"><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60" selected>1 hora</option><option value="90">1h30</option><option value="120">2 horas</option><option value="180">3 horas</option><option value="240">4 horas</option></select><small class="muted">Quando existir rotina salva, o SERE usa esse tempo como referência.</small></label>
+      <label class="block"><span class="muted text-sm">{{ t('focus.behavior') }}</span><select id="focusMode" class="field mt-1"><option value="block">Bloquear app</option><option value="motivate">Mostrar mensagem motivacional</option></select></label>
+      <label class="block"><span class="muted text-sm">{{ t('focus.apps') }}</span><input id="focusApps" class="field mt-1" value="TikTok, Instagram, YouTube, Jogos, Chat aleatório"></label>
+      <div class="flex flex-wrap gap-2">
+        <button id="startFocus" class="btn" type="button">{{ t('focus.start') }}</button>
+        <button id="stopFocus" class="btn-ghost" type="button">{{ t('focus.stop') }}</button>
+      </div>
+    </div>
+    <div id="blockedApps" class="mt-4 flex flex-wrap gap-2"></div>
+  </div>
+
+  <div class="card">
+    <h2 class="text-xl font-black">{{ t('display.title') }}</h2>
+    <div class="settings-grid mt-3">
+      <label class="setting-row"><span><strong>Modo competitivo</strong><small>Destaca rank, classe e pontuacao nas telas principais.</small></span><input type="checkbox" data-pref="sereCompetitive" checked></label>
+      <label class="setting-row"><span><strong>Ranking compacto</strong><small>Reduz espacamento para comparar mais alunos por tela.</small></span><input type="checkbox" data-pref="sereCompactRank"></label>
+      <label class="setting-row"><span><strong>Alertas de risco</strong><small>Mostra risco pedagogico como sinal de penalidade potencial.</small></span><input type="checkbox" data-pref="sereRiskAlerts" checked></label>
+      <label class="setting-row"><span><strong>Privacidade de bio</strong><small>Oculta sua bio publica no preview local.</small></span><input type="checkbox" data-pref="sereHideBio"></label>
+      <label class="setting-row"><span><strong>Linhas SERE</strong><small>Adiciona efeito de leitura digital nas telas.</small></span><input type="checkbox" data-pref="sereScanlines" checked></label>
+    </div>
+  </div>
+</section>
+{% endblock %}{% block scripts %}
+<script>
+document.querySelectorAll('[data-pref]').forEach(input=>{
+  const key=input.dataset.pref;
+  const stored=localStorage.getItem(key);
+  if(stored!==null) input.checked=stored==='1';
+  input.addEventListener('change',()=>localStorage.setItem(key,input.checked?'1':'0'));
+});
+const focusDuration=document.getElementById('focusDuration'),focusMode=document.getElementById('focusMode'),focusApps=document.getElementById('focusApps'),focusBadge=document.getElementById('focusBadge'),blockedApps=document.getElementById('blockedApps');
+function apps(){return focusApps.value.split(',').map(a=>a.trim()).filter(Boolean);}
+function renderApps(){
+  blockedApps.innerHTML=apps().map(app=>'<button type="button" class="btn-ghost compact" data-focus-app="'+app+'">'+app+'</button>').join('');
+  localStorage.setItem('sereFocusApps', focusApps.value);
+}
+function updateFocusBadge(){
+  const end=Number(localStorage.getItem('sereFocusEnd')||0);
+  if(end>Date.now()){
+    const mins=Math.ceil((end-Date.now())/60000);
+    focusBadge.textContent='Modo foco ativo: '+mins+' min';
+  } else {
+    focusBadge.textContent=focusBadge.dataset.inactive || 'Modo foco inativo';
+  }
+}
+focusApps.value=localStorage.getItem('sereFocusApps')||focusApps.value;
+focusMode.value=localStorage.getItem('sereFocusMode')||focusMode.value;
+if(focusDuration.dataset.routine){
+  const routine=String(focusDuration.dataset.routine);
+  if(Array.from(focusDuration.options).some(o=>o.value===routine)) focusDuration.value=routine;
+}
+focusApps.addEventListener('input',renderApps);
+focusMode.addEventListener('change',()=>localStorage.setItem('sereFocusMode',focusMode.value));
+document.getElementById('startFocus').addEventListener('click',()=>{
+  localStorage.setItem('sereFocusMode',focusMode.value);
+  localStorage.setItem('sereFocusEnd', String(Date.now()+Number(focusDuration.value)*60000));
+  renderApps(); updateFocusBadge();
+});
+document.getElementById('stopFocus').addEventListener('click',()=>{localStorage.removeItem('sereFocusEnd');updateFocusBadge();});
+renderApps(); updateFocusBadge(); setInterval(updateFocusBadge,30000);
+</script>
+{% endblock %}

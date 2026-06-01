@@ -1,0 +1,119 @@
+{% extends "base.html" %}{% block title %}SERE - Dashboard{% endblock %}{% block content %}
+{% if dados.modo == 'aluno' %}
+<section class="dashboard-hero">
+  <div>
+    <span class="eyebrow">Painel do aluno</span>
+    <h1>Meu Índice SERE</h1>
+    <p>{{ periodo_atual }} - desempenho, evolução, metas e acompanhamento pedagógico em uma visão clara.</p>
+  </div>
+  <form method="GET" action="/ranking" class="dashboard-search">
+    <input class="field" name="q" placeholder="Buscar no ranking...">
+  </form>
+</section>
+
+<section class="student-overview">
+  <article class="student-feature">
+    <div class="student-feature-top">
+      <div class="avatar-xl">{{ dados.aluno.inicial }}</div>
+      <div>
+        <h2>{{ dados.aluno.nome }}</h2>
+        <p>{{ dados.aluno.turma }} - Índice SERE {{ dados.aluno.indice_sere }} - Nível {{ dados.aluno.nivel }}</p>
+        <span class="pill">{{ dados.aluno.titulo }}</span>
+      </div>
+    </div>
+    <div class="metric-strip">
+      <div><span>Posição na turma</span><strong>#{{ dados.aluno.rank_turma }}</strong></div>
+      <div><span>Risco</span><strong>{{ dados.aluno.risco }}</strong></div>
+      <div><span>Comparativo</span><strong>{{ "%+.1f"|format(dados.comparativo.diferenca) }}</strong></div>
+    </div>
+    <p class="muted mt-4">{{ dados.aluno.risco_motivo }}</p>
+    <div class="mt-5 flex flex-wrap gap-2">
+      <a class="btn" href="/perfil/{{ dados.aluno.id }}">Perfil completo</a>
+      <a class="btn-ghost" href="/turmas/{{ dados.aluno.turma_id }}">Comparar turma</a>
+    </div>
+  </article>
+
+  <aside class="insight-stack">
+    <article class="insight-card">
+      <span class="eyebrow">Prioridade</span>
+      <h2>{{ dados.recomendacao.area_nome }}</h2>
+      <p>{{ dados.recomendacao.meta }}</p>
+      <a class="btn mt-4" href="/recomendacoes/{{ dados.aluno.id }}/{{ dados.recomendacao.area }}/prova">Comprovação</a>
+    </article>
+    <article class="insight-card">
+      <span class="eyebrow">Turma</span>
+      <h2>{{ dados.comparativo.posicao_turma }}/{{ dados.comparativo.total_turma }}</h2>
+      <p>Índice médio da turma: {{ dados.comparativo.media_turma }} - Nível {{ dados.comparativo.classe_turma }}.</p>
+    </article>
+  </aside>
+</section>
+
+<section class="card mt-4">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-xl font-black">Metas em andamento</h2>
+    <a class="text-sm font-bold text-cyan-200" href="/metas">Ver metas</a>
+  </div>
+  <div class="grid gap-3 md:grid-cols-3">
+    {% for meta in dados.metas %}
+    <article class="goal-tile">
+      <strong>{{ meta.titulo }}</strong>
+      <p>{{ meta.area_nome }} - {{ meta.status }}</p>
+      <div class="bar mt-3"><div class="fill" style="width: {{ meta.percentual }}%"></div></div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<section class="dashboard-hero">
+  <div>
+    <span class="eyebrow">Visão institucional</span>
+    <h1>Painel Institucional</h1>
+    <p>{{ periodo_atual }} - indicadores de desempenho, risco pedagógico, turmas e intervenções.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <form method="GET" action="/ranking" class="dashboard-search"><input class="field" name="q" placeholder="Buscar no ranking..."></form>
+    <a href="/relatorios" class="btn">Relatórios</a>
+    {% if is_admin %}<a href="/importar-csv" class="btn-ghost">Importar CSV</a>{% endif %}
+  </div>
+</section>
+
+<section class="institution-metrics">
+  <article><span>Alunos</span><strong>{{ dados.total_alunos }}</strong></article>
+  <article><span>Turmas</span><strong>{{ dados.total_turmas }}</strong></article>
+  <article><span>Índice SERE</span><strong>{{ dados.media_geral }}</strong></article>
+  <article><span>Nível médio</span><strong>{{ dados.classe_media }}</strong></article>
+</section>
+
+<section class="mt-4 grid gap-4 lg:grid-cols-2">
+  <article class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Atenção pedagógica</h2>
+      <span class="pill">Prioridade</span>
+    </div>
+    <div class="space-y-2">
+      {% for aluno in dados.alunos_atencao %}
+      <a class="grid-row grid-cols-[70px_1fr_auto]" href="/perfil/{{ aluno.id }}">
+        <span>{{ aluno.indice_sere }}</span>
+        <strong>{{ aluno.nome }}</strong>
+        <small>{{ aluno.risco }} - {{ aluno.turma }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Maiores índices</h2>
+      <span class="pill">Top 3</span>
+    </div>
+    <div class="space-y-2">
+      {% for aluno in dados.top_alunos %}
+      <a class="grid-row grid-cols-[70px_1fr_auto]" href="/perfil/{{ aluno.id }}">
+        <span>#{{ aluno.rank_geral }}</span>
+        <strong>{{ aluno.nome }}</strong>
+        <small>{{ aluno.turma }} - {{ aluno.nivel }}</small>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% endif %}{% endblock %}

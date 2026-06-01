@@ -1,0 +1,131 @@
+{% extends "base.html" %}{% block title %}SERE - Ranking{% endblock %}{% block content %}
+<div class="rank-hero mb-4">
+  <div>
+    <span class="eyebrow">Sistema Escolar de Ranking e Evolucao</span>
+    <h1>Ranking SERE</h1>
+    <p>Todos os alunos ranqueados por indice, atributos e classe. Merito visivel, melhoria mensuravel.</p>
+  </div>
+  <div class="rank-hero-score">
+    <span>{{ ranking_alunos|length }}</span>
+    <small>registros ativos</small>
+  </div>
+</div>
+
+<section class="grid gap-4 md:grid-cols-3">
+  {% for aluno in top3 %}
+  <a href="/perfil/{{ aluno.id }}" class="podium-card podium-{{ loop.index }}">
+    <span class="podium-rank">#{{ loop.index }}</span>
+    <div class="avatar">{{ aluno.inicial }}</div>
+    <strong>{{ aluno.nome }}</strong>
+    <small>{{ aluno.turma }} - {{ aluno.titulo }}</small>
+    <b>{{ aluno.indice_sere }} / {{ aluno.nivel }}</b>
+  </a>
+  {% endfor %}
+</section>
+
+<section class="card mt-4 ranking-console">
+  <div class="console-head">
+    <div>
+      <h2>Busca e filtros</h2>
+      <p class="muted">Ordene por qualquer atributo e encontre alunos por nome, turma, classe, risco ou titulo.</p>
+    </div>
+    <span id="resultCount" class="pill">{{ ranking_alunos|length }} alunos</span>
+  </div>
+  <div class="filter-grid mt-4">
+    <input id="searchInput" class="field" value="{{ request.args.get('q','') }}" placeholder="Pesquisar aluno, titulo, classe ou risco...">
+    <select id="turmaFilter" class="field">
+      <option value="todas">Todas as salas</option>
+      {% set turmas=[] %}{% for aluno in ranking_alunos %}{% if aluno.turma not in turmas %}
+      <option value="{{ aluno.turma }}">{{ aluno.turma }}</option>{% set _=turmas.append(aluno.turma) %}
+      {% endif %}{% endfor %}
+    </select>
+    <select id="classeFilter" class="field">
+      <option value="todas">Todas as classes</option>
+      {% for nivel in ["A+","A","A-","B+","B","B-","C+","C","C-","D+","D","D-","E+","E","E-","F"] %}
+      <option value="{{ nivel }}">{{ nivel }}</option>
+      {% endfor %}
+    </select>
+    <select id="riscoFilter" class="field">
+      <option value="todos">Todos os riscos</option>
+      <option value="Estavel">Estavel</option>
+      <option value="Leve">Leve</option>
+      <option value="Moderado">Moderado</option>
+      <option value="Alto">Alto</option>
+    </select>
+    <select id="categoryFilter" class="field">
+      <option value="geral">Indice geral</option>
+      <option value="academico">Academico</option>
+      <option value="adaptabilidade">Adaptabilidade</option>
+      <option value="fisico">Fisico</option>
+      <option value="social">Social</option>
+    </select>
+    <select id="rangeFilter" class="field">
+      <option value="0">Nota minima: qualquer</option>
+      <option value="90">Nota minima: 90</option>
+      <option value="80">Nota minima: 80</option>
+      <option value="70">Nota minima: 70</option>
+      <option value="60">Nota minima: 60</option>
+      <option value="50">Nota minima: 50</option>
+    </select>
+  </div>
+</section>
+
+<section class="card mt-4 overflow-x-auto">
+  <div class="min-w-[1180px]">
+    <div class="grid-head ranking-grid">
+      <span>Rank</span><span>Aluno</span><span>Sala</span><span>Classe</span><span>Indice</span><span>Acad.</span><span>Adapt.</span><span>Fis.</span><span>Social</span><span>Risco</span><span>Acesso</span>
+    </div>
+    <div id="rankingList" class="mt-2 space-y-2">
+      {% for aluno in ranking_alunos %}
+      <div class="grid-row ranking-grid rank-line"
+        data-nome="{{ aluno.nome|lower }}"
+        data-turma="{{ aluno.turma }}"
+        data-classe="{{ aluno.nivel }}"
+        data-risco="{{ aluno.risco }}"
+        data-titulo="{{ aluno.titulo|lower }}"
+        data-geral="{{ aluno.geral }}"
+        data-academico="{{ aluno.academico }}"
+        data-adaptabilidade="{{ aluno.adaptabilidade }}"
+        data-fisico="{{ aluno.fisico }}"
+        data-social="{{ aluno.social }}">
+        <span class="rank-number">#{{ aluno.rank_turma if is_aluno else aluno.rank_geral }}</span>
+        <span>
+          <a class="student-name-link" href="/perfil/{{ aluno.id }}"><strong>{{ aluno.nome }}</strong></a>
+          <small class="muted block">{{ aluno.titulo }}</small>
+        </span>
+        <span>{{ aluno.turma }}</span>
+        <span class="grade-badge">{{ aluno.nivel }}</span>
+        <span class="score-cell">{{ aluno.indice_sere }}</span>
+        <span>{{ aluno.academico }}</span>
+        <span>{{ aluno.adaptabilidade }}</span>
+        <span>{{ aluno.fisico }}</span>
+        <span>{{ aluno.social }}</span>
+        <span>{{ aluno.risco }}</span>
+        <a class="btn-ghost compact" href="/perfil/{{ aluno.id }}">Perfil</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}{% block scripts %}
+<script>
+const searchInput=document.getElementById('searchInput'),turmaFilter=document.getElementById('turmaFilter'),classeFilter=document.getElementById('classeFilter'),riscoFilter=document.getElementById('riscoFilter'),categoryFilter=document.getElementById('categoryFilter'),rangeFilter=document.getElementById('rangeFilter'),rankingList=document.getElementById('rankingList'),resultCount=document.getElementById('resultCount');
+function atualizarRanking(){
+  const busca=searchInput.value.toLowerCase().trim(),turma=turmaFilter.value,classe=classeFilter.value,risco=riscoFilter.value,categoria=categoryFilter.value,minimo=Number(rangeFilter.value);
+  const linhas=Array.from(document.querySelectorAll('.rank-line'));
+  linhas.sort((a,b)=>Number(b.dataset[categoria])-Number(a.dataset[categoria]));
+  let pos=1,visiveis=0;
+  linhas.forEach(l=>{
+    const texto=(l.dataset.nome+' '+l.dataset.titulo+' '+l.dataset.classe+' '+l.dataset.risco).toLowerCase();
+    const nota=Number(l.dataset[categoria]);
+    const ok=texto.includes(busca)&&(turma==='todas'||l.dataset.turma===turma)&&(classe==='todas'||l.dataset.classe===classe)&&(risco==='todos'||l.dataset.risco===risco)&&nota>=minimo;
+    l.style.display=ok?'grid':'none';
+    if(ok){l.querySelector('.rank-number').textContent='#'+pos++;visiveis++;}
+    rankingList.appendChild(l);
+  });
+  resultCount.textContent=visiveis+' aluno'+(visiveis===1?'':'s');
+}
+[searchInput,turmaFilter,classeFilter,riscoFilter,categoryFilter,rangeFilter].forEach(el=>el.addEventListener(el.tagName==='INPUT'?'input':'change',atualizarRanking));
+atualizarRanking();
+</script>
+{% endblock %}

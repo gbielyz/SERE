@@ -1,0 +1,62 @@
+{% extends "base.html" %}{% block title %}SERE - Interven&ccedil;&otilde;es{% endblock %}{% block content %}
+<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+  <div>
+    <h1 class="text-3xl font-black">Interven&ccedil;&otilde;es pedag&oacute;gicas</h1>
+    <p class="muted">Planos de a&ccedil;&atilde;o para alunos que precisam de acompanhamento, prazo e resolu&ccedil;&atilde;o.</p>
+  </div>
+  <a class="btn-ghost" href="/relatorios">Ver relat&oacute;rios</a>
+</div>
+{% if mensagem %}<div class="mb-4 rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-emerald-100">{{ mensagem }}</div>{% endif %}
+
+<section class="grid gap-4 lg:grid-cols-[420px_1fr]">
+  <form method="POST" action="/intervencoes" class="card space-y-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h2 class="text-xl font-black">Novo plano</h2>
+    <select class="field" name="student_id" required>
+      {% for aluno in alunos %}<option value="{{ aluno.id }}">{{ aluno.nome }} - {{ aluno.turma }}</option>{% endfor %}
+    </select>
+    <select class="field" name="motivo" required>
+      <option>Queda de desempenho</option>
+      <option>Baixa participa&ccedil;&atilde;o</option>
+      <option>Dificuldade acad&ecirc;mica</option>
+      <option>Dificuldade social</option>
+      <option>Adapta&ccedil;&atilde;o e autonomia</option>
+      <option>Acompanhamento preventivo</option>
+    </select>
+    <textarea class="field" name="acao" rows="5" placeholder="A&ccedil;&atilde;o combinada, evid&ecirc;ncia esperada e acompanhamento" required></textarea>
+    <input class="field" name="responsavel" placeholder="Respons&aacute;vel">
+    <input class="field" type="date" name="prazo">
+    <button class="btn" type="submit">Criar plano</button>
+  </form>
+
+  <section class="card">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-xl font-black">Planos ativos</h2>
+      <span class="pill">{{ intervencoes|length }} registros</span>
+    </div>
+    <div class="space-y-3">
+      {% for item in intervencoes %}
+      <article class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="pill">{{ item.status }}</span>
+          <span class="pill">{{ item.aluno.turma }}</span>
+          {% if item.prazo %}<span class="pill">Prazo {{ item.prazo }}</span>{% endif %}
+        </div>
+        <h3 class="mt-3 text-lg font-black">{{ item.aluno.nome }} - {{ item.motivo }}</h3>
+        <p class="muted mt-2">{{ item.acao }}</p>
+        <p class="muted mt-2 text-sm">Respons&aacute;vel: {{ item.responsavel or usuario_atual }}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a class="btn-ghost" href="/perfil/{{ item.student_id }}">Perfil</a>
+          {% if item.status != 'Em acompanhamento' %}<form method="POST" action="/intervencoes/{{ item.id }}/acompanhar"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn-ghost" type="submit">Acompanhar</button></form>{% endif %}
+          {% if item.status != 'Concluida' %}<form method="POST" action="/intervencoes/{{ item.id }}/concluir"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn" type="submit">Concluir</button></form>{% endif %}
+          {% if item.status != 'Cancelada' %}<form method="POST" action="/intervencoes/{{ item.id }}/cancelar"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn-ghost" type="submit">Cancelar</button></form>{% endif %}
+          {% if item.status != 'Aberta' %}<form method="POST" action="/intervencoes/{{ item.id }}/reabrir"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn-ghost" type="submit">Reabrir</button></form>{% endif %}
+        </div>
+      </article>
+      {% else %}
+      <div class="rounded-xl bg-slate-950/50 p-4"><strong>Nenhum plano registrado.</strong></div>
+      {% endfor %}
+    </div>
+  </section>
+</section>
+{% endblock %}

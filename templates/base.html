@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SERE{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css?v=9">
+</head>
+<body class="app-shell {{ tema_atual }}">
+  <button type="button" onclick="toggleSidebar()" class="sidebar-toggle" aria-label="Alternar menu">{{ t('ui.menu') }}</button>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">SERE</div>
+    <nav class="nav-list">
+      <a class="nav-link" href="/dashboard">{{ t('nav.home') }}</a>
+      <a class="nav-link" href="/ranking">{{ t('nav.ranking') }}</a>
+      <a class="nav-link" href="/rotina">{{ t('nav.routine') }}</a>
+      <a class="nav-link" href="/metas">{{ t('nav.goals') }}</a>
+      <a class="nav-link" href="/recomendacoes">{{ t('nav.recommendations') }}</a>
+      <a class="nav-link" href="/titulos">{{ t('nav.recognitions') }}</a>
+      <a class="nav-link" href="/eventos">{{ t('nav.events') }}</a>
+      <a class="nav-link" href="/avisos">{{ t('nav.notices') }}</a>
+      <a class="nav-link" href="/historico">{{ t('nav.history') }}</a>
+      {% if is_professor or is_admin %}<a class="nav-link" href="/professor">{{ t('nav.teacher') }}</a>{% endif %}
+      {% if is_admin or is_professor %}<a class="nav-link" href="/relatorios">{{ t('nav.reports') }}</a>{% endif %}
+      {% if is_admin or is_professor %}<a class="nav-link" href="/intervencoes">{{ t('nav.interventions') }}</a>{% endif %}
+      {% if is_admin or is_professor %}<a class="nav-link" href="/painel">{{ t('nav.management') }}</a>{% endif %}
+      <a class="nav-link" href="/configuracoes">{{ t('nav.settings') }}</a>
+      <a class="nav-link danger" href="/logout">{{ t('nav.logout') }}</a>
+    </nav>
+  </aside>
+  <main id="page" class="page">
+    <div class="page-inner">{% block content %}{% endblock %}</div>
+  </main>
+  <div id="focusOverlay" class="focus-overlay hidden">
+    <div class="focus-modal">
+      <span class="eyebrow">Modo foco ativo</span>
+      <h2 id="focusTitle">Continue estudando</h2>
+      <p id="focusMessage" class="muted">Seu ciclo de estudo ainda esta em andamento.</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button class="btn" type="button" onclick="closeFocusOverlay()">Voltar ao SERE</button>
+        <button id="focusOverride" class="btn-ghost" type="button" onclick="closeFocusOverlay()">Entendi</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSidebar(){
+      if(window.innerWidth < 1024){ document.body.classList.toggle('sidebar-open'); return; }
+      document.body.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sereSidebarCollapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+    }
+    if(localStorage.getItem('sereSidebarCollapsed') === '1') document.body.classList.add('sidebar-collapsed');
+    document.querySelectorAll('.nav-link').forEach(function(link){
+      if(link.getAttribute('href') === window.location.pathname){ link.classList.add('active'); }
+    });
+    function focusState(){
+      const end=Number(localStorage.getItem('sereFocusEnd')||0);
+      return {active:end>Date.now(), end};
+    }
+    function focusRemainingText(end){
+      const mins=Math.max(1,Math.ceil((end-Date.now())/60000));
+      return mins>=60 ? Math.floor(mins/60)+'h '+(mins%60)+'min restantes' : mins+' min restantes';
+    }
+    function openFocusOverlay(appName){
+      const mode=localStorage.getItem('sereFocusMode')||'block';
+      const state=focusState();
+      if(!state.active) return false;
+      document.getElementById('focusTitle').textContent=mode==='motivate'?'Antes de abrir '+appName:'Acesso bloqueado: '+appName;
+      document.getElementById('focusMessage').textContent=mode==='motivate'
+        ? 'Voce marcou este periodo para evoluir. '+focusRemainingText(state.end)+'. Termine um bloco e volte com mais liberdade.'
+        : appName+' esta na lista de distracoes do modo foco. '+focusRemainingText(state.end)+'.';
+      document.getElementById('focusOverride').style.display=mode==='motivate'?'inline-flex':'none';
+      document.getElementById('focusOverlay').classList.remove('hidden');
+      return mode==='block';
+    }
+    function closeFocusOverlay(){ document.getElementById('focusOverlay').classList.add('hidden'); }
+    document.addEventListener('click', function(event){
+      const target=event.target.closest('[data-focus-app]');
+      if(target && openFocusOverlay(target.dataset.focusApp || target.textContent.trim())){
+        event.preventDefault();
+      }
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

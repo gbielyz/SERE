@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SERE - Login</title>
+  <link rel="stylesheet" href="/static/style.css?v=9">
+</head>
+<body class="tema-padrao grid min-h-screen place-items-center px-4 text-slate-100">
+  <main class="card w-full max-w-md p-8 text-center">
+    <div class="mb-6">
+      <img src="/static/logo.png" alt="SERE" class="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain">
+      <h1 class="text-3xl font-black tracking-[0.22em]">SERE</h1>
+      <p class="muted mt-2 text-sm">Sistema de Evolu&ccedil;&atilde;o e Engajamento Estudantil</p>
+    </div>
+    {% if erro %}<div class="mb-4 rounded-xl border border-rose-300/20 bg-rose-300/10 p-3 text-sm text-rose-100">{{ erro }}</div>{% endif %}
+    <form method="POST" action="/login" class="space-y-4 text-left">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="block"><span class="mb-1 block text-sm font-bold text-slate-300">{{ t('login.user') }}</span><input class="field" name="usuario" autocomplete="username" required></label>
+      <label class="block"><span class="mb-1 block text-sm font-bold text-slate-300">{{ t('login.password') }}</span><input class="field" type="password" name="senha" autocomplete="current-password" required></label>
+      <button class="btn w-full" type="submit">{{ t('login.submit') }}</button>
+    </form>
+    <p class="muted mt-5 text-center text-xs">Acesso separado para aluno, professor e dire&ccedil;&atilde;o.</p>
+    <p class="muted mt-2 text-center text-xs"><a href="/">{{ t('login.back') }}</a></p>
+  </main>
+</body>
+</html>

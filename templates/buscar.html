@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}SERE - Buscar{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-3xl font-black">Buscar</h1>
+  <p class="muted">Encontre alunos, turmas, eventos, atividades validadas e relatórios.</p>
+</div>
+
+<form method="GET" action="/buscar" class="mb-4 flex flex-col gap-2 sm:flex-row">
+  <input class="field" name="q" value="{{ consulta }}" placeholder="Digite sua busca..." autofocus>
+  <button class="btn" type="submit">Buscar</button>
+</form>
+
+<section class="space-y-2">
+  {% for r in resultados %}
+  <a class="grid-row grid-cols-[120px_1fr]" href="{{ r.link }}">
+    <span class="pill">{{ r.tipo }}</span>
+    <span>
+      <strong>{{ r.titulo }}</strong>
+      <small class="muted block">{{ r.texto }}</small>
+    </span>
+  </a>
+  {% else %}
+  <div class="card">
+    <strong>Nenhum resultado.</strong>
+    <p class="muted">Digite algo para pesquisar.</p>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

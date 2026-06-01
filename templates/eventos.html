@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}SERE - Eventos{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <h1 class="text-3xl font-black">Eventos e Atividades Validadas</h1>
+  <p class="muted">Atividades coletivas, comparativos entre turmas e entregas validadas.</p>
+</div>
+
+<section class="grid gap-4 lg:grid-cols-3">
+  <div class="card">
+    <h2 class="text-xl font-black">Eventos</h2>
+    <div class="mt-3 space-y-3">
+      {% for e in eventos %}
+      <div class="rounded-xl bg-slate-950/50 p-3">
+        <span class="pill">{{ e.status }}</span>
+        <strong class="mt-2 block">{{ e.nome }}</strong>
+        <p class="muted text-sm">{{ e.missao }}</p>
+        <small>{{ e.recompensa }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="text-xl font-black">Comparativos entre turmas</h2>
+    <div class="mt-3 space-y-3">
+      {% for d in desafios %}
+      <div class="rounded-xl bg-slate-950/50 p-3">
+        <strong>{{ d.nome }}</strong>
+        <p class="muted text-sm">{{ d.turma_a }} {{ d.score_a }} x {{ d.score_b }} {{ d.turma_b }}</p>
+        <span class="pill">{{ d.vencedor }}</span>
+      </div>
+      {% else %}
+      <p class="muted text-sm">Nenhum comparativo ativo no momento.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="text-xl font-black">Atividades validadas</h2>
+    <div class="mt-3 space-y-3">
+      {% for m in missoes %}
+      <div class="rounded-xl bg-slate-950/50 p-3">
+        <span class="pill">{{ m.tipo }}</span>
+        <strong class="mt-2 block">{{ m.titulo }}</strong>
+        <p class="muted text-sm">{{ m.objetivo }}</p>
+        <small>{{ m.recompensa }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
