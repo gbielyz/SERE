@@ -1,10 +1,25 @@
 # SERE
 
+![Python](https://img.shields.io/badge/Python-3.14-blue)
+![Flask](https://img.shields.io/badge/Flask-3.1.2-black)
+![Status](https://img.shields.io/badge/status-MVP-green)
+![Tests](https://img.shields.io/badge/tests-15%20passing-brightgreen)
+
 Sistema de Evolucao e Engajamento Estudantil.
 
-O SERE ajuda escolas a acompanhar desempenho, evolucao, metas, intervencoes e relatorios em um so painel.
+O SERE e uma plataforma escolar que centraliza desempenho, evolucao, metas, rotina de estudos, intervencoes pedagogicas e relatorios em um painel unico para alunos, professores e direcao.
 
 > Pitch: A SERE e uma plataforma escolar que transforma notas, participacao, evolucao e intervencoes em um painel claro para alunos, professores e direcao acompanharem desempenho e merito.
+
+## Visao simples
+
+Escolas normalmente acompanham notas, comportamento, participacao e dificuldades em lugares separados. O SERE junta esses dados em uma experiencia unica:
+
+```text
+Dados do aluno -> Indice SERE -> Ranking e perfil -> Metas e rotina -> Intervencoes -> Relatorios
+```
+
+O objetivo nao e apenas ranquear alunos. A ideia principal e mostrar onde cada estudante pode melhorar e dar ferramentas para professor e direcao acompanharem essa evolucao.
 
 ## Demo online
 
@@ -20,7 +35,7 @@ Guia: [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md)
 
 ## Imagens
 
-As imagens abaixo sao capturas da fase de prototipo visual. A demo atual removeu o modulo competitivo individual e foca na experiencia institucional.
+As imagens abaixo sao capturas da fase de prototipo visual. A demo atual foca na experiencia institucional, com acompanhamento pedagogico e relatorios.
 
 ![Ranking desktop](docs/assets/sere-ranking-desktop.png)
 ![Ranking mobile](docs/assets/sere-ranking.png)
@@ -43,15 +58,48 @@ As imagens abaixo sao capturas da fase de prototipo visual. A demo atual removeu
 - Painel de gestao com fluxo de aprovacao para limitar alteracoes feitas por professores.
 - Preferencias de tema e idioma.
 
+## Exemplo de uso
+
+Um aluno entra na plataforma e visualiza:
+
+```text
+Aluno: Mariana Costa
+Turma: 2B
+Indice SERE: 77.7
+Nivel: B+
+Risco pedagogico: Estavel
+Prioridade: manter evolucao academica e melhorar consistencia social
+```
+
+A partir disso, o SERE pode gerar metas, rotina semanal, recomendacoes e planos de intervencao quando houver queda de desempenho.
+
+## Estado atual
+
+| Area | Status |
+| --- | --- |
+| Login por perfil | Implementado |
+| Dashboard do aluno | Implementado |
+| Ranking e perfil publico | Implementado |
+| Rotina de estudos | Implementado |
+| Intervencoes pedagogicas | Implementado |
+| Relatorios PDF/XLSX | Implementado |
+| Testes automatizados | 15 testes passando |
+| Deploy Render | Configurado |
+
 ## Arquitetura
 
 ```mermaid
-flowchart LR
-  A["Aluno / Professor / Direcao"] --> B["Flask"]
-  B --> C["SQLite"]
-  B --> D["Templates Jinja"]
-  B --> E["Relatorios PDF/XLSX"]
-  B --> F["Permissoes e CSRF"]
+flowchart TD
+  A["Aluno / Professor / Direcao"] --> B["Login com permissoes"]
+  B --> C["Dashboard SERE"]
+  C --> D["Indice, ranking e perfis"]
+  C --> E["Metas, rotina e recomendacoes"]
+  C --> F["Intervencoes pedagogicas"]
+  D --> G["Relatorios PDF/XLSX"]
+  E --> G
+  F --> G
+  H["SQLite"] --> C
+  I["CSRF e regras de acesso"] --> B
 ```
 
 Detalhes: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
