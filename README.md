@@ -187,3 +187,6 @@ Resumo:
 - Logs de auditoria mais completos.
 
 Detalhes: [docs/ROADMAP.md](docs/ROADMAP.md)
+
+Espero que esteja pelo menos ok, é meu primeiro projeto, espero que gostem!
+(aceito criticas sem problemas)
