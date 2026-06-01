@@ -18,6 +18,7 @@ instance/
 uploads/
 *.log
 *.zip
+*.pid
 
 # Local/editor files
 .DS_Store

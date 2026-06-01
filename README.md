@@ -72,8 +72,6 @@ SERE/
   static/
   templates/
   tests/
-  tools/
-  archive/             # prototipos antigos fora do produto principal
 ```
 
 ## Rodar localmente
@@ -88,6 +86,18 @@ Abra:
 ```text
 http://127.0.0.1:5000
 ```
+
+## Acessos de demo
+
+Use estes acessos apenas em desenvolvimento local:
+
+```text
+Direcao:   admin.sere / trocar-admin-dev
+Professor: professor / trocar-professor-dev
+Aluno:     aluno.demo / trocar-aluno-dev
+```
+
+Em deploy publico, configure senhas proprias nas variaveis `SERE_ADMIN_PASSWORD`, `SERE_PROFESSOR_PASSWORD` e `SERE_ALUNO_PASSWORD`.
 
 ## Testes
 
