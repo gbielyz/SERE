@@ -153,16 +153,16 @@ Em deploy publico, configure senhas proprias nas variaveis `SERE_ADMIN_PASSWORD`
 python -m unittest discover -s tests
 ```
 
-## Antes de publicar no GitHub
+## Higiene do repositorio
 
-O projeto ja inclui `.gitignore` para evitar commit de banco local, cache Python, `.env` e rascunhos fora do produto principal.
+O projeto inclui `.gitignore` para manter fora do repositorio arquivos locais, dados sensiveis e artefatos gerados em desenvolvimento.
 
-Nao publique:
+Arquivos que nao devem ser versionados:
 
 - `sere.db`
 - `__pycache__/`
 - `.env`
-- arquivos pessoais ou experimentais dentro de `archive/` e `tools/documentos/`
+- arquivos pessoais, temporarios ou experimentais fora do produto principal
 
 ## Variaveis de ambiente
 
